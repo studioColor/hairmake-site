@@ -1,0 +1,59 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import type { SlideImage } from "@/types";
+
+// Placeholder slides (Firestoreからデータ取得後に差し替え)
+const placeholderSlides: SlideImage[] = [
+  { id: "1", url: "/images/placeholder-salon.svg", alt: "店内画像", order: 0, createdAt: new Date() },
+  { id: "2", url: "/images/placeholder-style.svg", alt: "スタイル写真", order: 1, createdAt: new Date() },
+  { id: "3", url: "/images/placeholder-school.svg", alt: "スクール写真", order: 2, createdAt: new Date() },
+];
+
+type Props = {
+  slides?: SlideImage[];
+};
+
+export default function HeroSlider({ slides = placeholderSlides }: Props) {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  return (
+    <div className="relative w-full h-[60vh] sm:h-[80vh] overflow-hidden bg-gray-100">
+      {slides.map((slide, i) => (
+        <div
+          key={slide.id}
+          className={`absolute inset-0 transition-opacity duration-1000 ${i === current ? "opacity-100" : "opacity-0"}`}
+        >
+          <Image
+            src={slide.url}
+            alt={slide.alt}
+            fill
+            className="object-cover"
+            priority={i === 0}
+          />
+        </div>
+      ))}
+
+      {/* Dots */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white w-6" : "bg-white/50"}`}
+            aria-label={`スライド${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
